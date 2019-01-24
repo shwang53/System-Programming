@@ -145,7 +145,8 @@ at least 8 bits.
 
 ```c
 // Your answer here
-0x7fbd9d30
+0x7fbd9d30 (if stack)
+0x7fbd9d50(if heap)
 ```
 
 5.  What is `data[3]` equivalent to in C? Hint: what does C convert `data[3]` to before dereferencing the address? Remember, the type of a string constant `abc` is an array.
