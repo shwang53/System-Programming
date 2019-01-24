@@ -259,6 +259,7 @@ free(ptr);
 ```
 //answer
 freeing twice the same pointer. It will occur undefined behavior
+second line will occur error because memory of ptr is already freed(deallocated).
 
 8.  What is wrong with this code snippet?
 
