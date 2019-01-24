@@ -277,46 +277,17 @@ and keeping track of memories.
 10. Use the following space for the next four questions
 
 ```c
-// 10
-#include <stdio.h>
-#include <stdlib.h>
-
-struct Person{
-	char* name;
-	int age;
-	struct Person* friends[];
-	
-};
-
-typedef struct Person person_t;
-
-int main() {
-	
-	person_t* ptr = (person_t*)malloc(sizeof(person_t));
-	person_t* ptr_f = (person_t*)malloc(sizeof(person_t));
-	
-	ptr->age = 25;
-	
-	printf("His age : %d\n", ptr->age);
-	
-	ptr->friends[0] = ptr_f;
-	ptr_f->age = 27;
-	
-	printf("His friend's age : %d\n", ptr->friends[0]->age);
-	
-	return 0;
-}
-
-// 12, 13 , 11
-
+// 10, 11, 12, 13
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <stdio.h>
 
 struct Person{
 	char* name;
 	int age;
-	struct Person* friends[];
+	struct Person* friends[10];
 	
 };
 
@@ -347,7 +318,7 @@ int main() {
 	
 	person_t* AS = create("Agent Smith", 128);
 	person_t* SM = create("Sonny Moore", 256);
-	//setFriends(AS, SM);
+	setFriends(AS, SM);
 	
 	
 	printf("His age : %d\n", AS->age);
@@ -355,8 +326,8 @@ int main() {
 	printf("His friend's age : %d\n", AS->friends[0]->age);
 	
 	
-	//destroy(AS);
-	//destroy(SM);
+	destroy(AS);
+	destroy(SM);
 	return 0;
 }
 
