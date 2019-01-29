@@ -9,7 +9,7 @@
 
 #include "camelCaser.h"
 #include "camelCaser_tests.h"
-#include "camelCaser_ref_utils.h"
+
 
 /*
  * Testing function for various implementations of camelCaser.
