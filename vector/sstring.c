@@ -84,8 +84,9 @@ char *sstring_slice(sstring *this, int start, int end) {
     // your code goes here
 	 char* temp = malloc(sizeof(end - start + 1));
  	 
-	int i;
- 	 for ( i = 0; i < end + 1; i++) {
+	size_t i;
+	size_t min = (int)this->leng <(int) end+1 ? this->leng : end+1;
+ 	 for ( i = 0; i < min; i++) {
    		 temp[i] = this->words[i + start];
  	 }
  	 temp[i] = '\0';
