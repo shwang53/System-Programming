@@ -152,10 +152,37 @@ size_t vector_size(vector *this) {
 void vector_resize(vector *this, size_t n) {
     assert(this);
     // your code here
-	assert (n != this->size);
+//	assert (n != this->size);
 
 	size_t new_capacity = this->capacity;
+/*
+	if(n == 0) {
+	//	this->size = 0;
 	
+		this-> array = realloc(this->array, sizeof(void*)*new_capacity);
+		assert(this->array);
+		for(size_t i=0; i<this->size; i++){
+			 if(this->array[i]){
+                                (this->destructor)(this->array[i]);
+                        }       
+                        this->array[i] = NULL;
+		}
+		this->size = 0;
+		return;
+	}
+
+*/	
+	if(n == this->size){
+	//	this->size = n;
+	//	this->array = realloc(this->array, sizeof(void*) * new_capacity);
+         //       assert(this->array);
+	//	this->size = n;
+	//	this->capacity = new_capacity;
+		return;
+	}
+
+	assert(n!=this->size);
+
 	if( this->capacity >= n && this->size > n){
 		this->array = realloc(this->array, sizeof(void*) * new_capacity);
 		assert(this->array);

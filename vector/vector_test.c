@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
 //	int *b = &a;
 //	vector_insert(test, 0, b);
 //	printf("%d\n",*(int*)vector_get(test,0)); 
-/*
+
 
 	//SH
 		// Write your test cases here
@@ -29,7 +29,8 @@ int main(int argc, char *argv[]) {
         vector * vec_  = vector_create(int_copy_constructor, int_destructor, int_default_constructor);
 
         size_t cap = vector_capacity(vec_);
-
+	
+	
         //vector_reserve() test case
         vector_reserve(vec_, 10);
         cap = vector_capacity(vec_);
@@ -96,9 +97,17 @@ int main(int argc, char *argv[]) {
         vector_resize(vec_, 40);
         printf("Resized size: %zu, capacity: %zu\n", vector_size(vec_), vector_capacity(vec_));
 
-        vector_resize(vec_, 3);
+        vector_resize(vec_, 40);
          printf("Resized size: %zu, capacity: %zu\n", vector_size(vec_), vector_capacity(vec_));
-        for(size_t i = 0; i < vector_size(vec_); i++) {
+       
+//	  vector_resize(vec_, 0);
+  //       printf("Resized size: %zu, capacity: %zu\n", vector_size(vec_), vector_capacity(vec_));
+
+	  vector_resize(vec_, 3);
+         printf("Resized size: %zu, capacity: %zu\n", vector_size(vec_), vector_capacity(vec_));
+
+
+	 for(size_t i = 0; i < vector_size(vec_); i++) {
                 printf("%d\n", *(int*)vector_get(vec_,i));
         }
 //      vector_erase(vec_,2);
@@ -108,7 +117,8 @@ int main(int argc, char *argv[]) {
 //      vector_clear(vec_);
         printf("size after clear: %zu\n", vector_size(vec_));
         vector_destroy(vec_);
-*/
+	
+	
         return 0;
 	 return 0;
 
