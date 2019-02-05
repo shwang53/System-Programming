@@ -120,8 +120,9 @@ vector *vector_create(copy_constructor_type copy_constructor,
 }
 
 void vector_destroy(vector *this) {
-    assert(this);
+   // assert(this);
     // your code here
+	/*
 	for(size_t i=0; i < this->size; i++){
 		void* temp;
 		temp = this->array[i];
@@ -132,6 +133,22 @@ void vector_destroy(vector *this) {
 	free(this->array);
 	free(this);
 	this = NULL;
+*/
+   assert(this);
+
+    	for (size_t i = 0; i < this->size; i++){
+		void * temp;
+		temp = this->array[i];
+		if(temp != NULL){
+			(*this->destructor)(temp);
+		}
+	}
+       // Vector_dealloc_elem(vector, iter);
+
+    free(this->array);
+    free(this);
+
+	
 }
 
 
