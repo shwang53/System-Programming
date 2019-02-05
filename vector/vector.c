@@ -355,10 +355,27 @@ void vector_insert(vector *this, size_t position, void *element) {
 
 void vector_erase(vector *this, size_t position) {
     assert(this);
-    assert(position < vector_size(this));
+    assert(position < this -> size);
     // your code here
 	//deallocate if needed
+	 void * temp;
+         temp = this->array[position];
+         if(temp != NULL){
+                (*this->destructor)(temp);
+         }
 
+	 size_t i;
+   	 for (i = position; i < this->size - 1; i++) 
+       	 	this->array[i] = this->array[i+1];
+    
+   	 this->array[this->size - 1] = NULL;
+
+    
+   	 vector_resize(this, this->size - 1);
+
+
+
+	/*
 	size_t v_size = this->size;
     	if (position < v_size) {
       		vector_resize(this, (v_size - 1));
@@ -366,6 +383,7 @@ void vector_erase(vector *this, size_t position) {
 			this->array[i] = this->array[i + 1];
       		}	
     	}	
+*/
 }
 
 //hi
