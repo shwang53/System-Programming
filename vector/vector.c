@@ -92,15 +92,48 @@ vector *vector_create(copy_constructor_type copy_constructor,
     // your code here
     // Casting to void to remove complier error. Remove this line when you are
     // ready.
-    (void)INITIAL_CAPACITY;
-    (void)get_new_capacity;
-    return NULL;
+	
+	//allocate the memory
+	vector *test = malloc(sizeof(vector));
+	if(test == NULL)
+		return NULL;
+
+	//get prepared
+	test->copy_constructor = copy_constructor;
+	test->destructor = destructor;
+	test->default_constructor = default_constructor;
+
+	// size = 0
+	test->size = 0;
+
+	// capacity = initiral capacity
+	test->capacity = INITIAL_CAPACITY;
+	
+	// allocate pointers in array
+	test->array = malloc(INITIAL_CAPACITY * sizeof(void*));
+	for(size_t i =0; i < INITIAL_CAPACITY; i++){
+		test->array[i] = NULL; //initiallize NULL;
+	}
+	
+	
+    return test;
 }
 
 void vector_destroy(vector *this) {
     assert(this);
     // your code here
+	for(size_t i=0; i < this->size; i++){
+		void* temp;
+		temp = this->array[i];
+		if( temp != NULL ){
+			(*this->destructor)(temp);
+		}
+	}
+	free(this->array);
+	free(this);
+	this = NULL;
 }
+
 
 void **vector_begin(vector *this) {
     return this->array + 0;
@@ -112,83 +145,197 @@ void **vector_end(vector *this) {
 
 size_t vector_size(vector *this) {
     assert(this);
-    // your code here
-    return 0;
+    // your code here //ok
+    return this->size;
 }
 
 void vector_resize(vector *this, size_t n) {
     assert(this);
     // your code here
+	assert (n != this->size);
+
+	size_t new_capacity = this->capacity;
+	
+	if( this->capacity >= n && this->size > n){
+		this->array = realloc(this->array, sizeof(void*) * new_capacity);
+		assert(this->array);
+
+		for(size_t i = n; i < this->size; i++){
+			if(this->array[i]){
+				(this->destructor)(this->array[i]);
+			}
+			this->array[i] = NULL;
+		}
+	}
+
+	else if(this->size < n && this->capacity >= n){
+		this->array = realloc(this->array, sizeof(void*) * new_capacity);
+		assert(this->array);
+
+		for(size_t i = this->size; i<n; i++)
+			(this->array[i]) = NULL;
+	}
+
+	//Increase capacity & size
+	else if( n > this -> capacity ){
+		new_capacity = get_new_capacity(n);
+		this->array = realloc(this->array, new_capacity*sizeof(void*));
+		assert(this->array);
+		
+		for(size_t i = this->size; i < new_capacity; i++){
+			this->array[i] = NULL;
+		}
+	}
+
+	this->size = n;
+	this->capacity = new_capacity;
+
 }
 
 size_t vector_capacity(vector *this) {
     assert(this);
-    // your code here
-    return 0;
+    // your code here //ok
+    return this->capacity;
 }
 
 bool vector_empty(vector *this) {
     assert(this);
     // your code here
-    return true;
+	return (this->size == 0 ) ? true : false;
+   
 }
 
 void vector_reserve(vector *this, size_t n) {
     assert(this);
     // your code here
-}
+	if( n > this->capacity){
+		this->capacity = get_new_capacity(n);
+		this->array = realloc(this->array, ((this->capacity) * (sizeof(void*))));
+		assert(this->array);
+	}else{
+		return;
+	}
+}	
 
 void **vector_at(vector *this, size_t position) {
     assert(this);
     // your code here
-    return NULL;
+	assert(position < this->size);
+//	assert(this->array);
+    return this->array + position;
 }
 
 void vector_set(vector *this, size_t position, void *element) {
     assert(this);
     // your code here
+	assert(position < this->size);
+
+	void *temp;
+	temp = this->array[position];	
+	if((temp != NULL)){
+		(*this->destructor)(temp);
+	}
+
+	if(element != NULL ){
+		this->array[position] = (*this->copy_constructor)(element);
+	}else{
+		this->array[position] = NULL;
+	}
+
 }
 
 void *vector_get(vector *this, size_t position) {
     assert(this);
+
     // your code here
-    return NULL;
+	assert(position < this->size);
+	return (this->array[position] == NULL) ? NULL:this->array[position];
 }
 
 void **vector_front(vector *this) {
     assert(this);
     // your code here
-    return NULL;
+    return this->array + 0;
 }
 
 void **vector_back(vector *this) {
     // your code here
-    return NULL;
+    return (this->array + (this->size)-1);
 }
 
 void vector_push_back(vector *this, void *element) {
     assert(this);
     // your code here
+	vector_resize(this, this->size+1);
+	if(element != NULL){
+		this->array[this->size-1] = (*this->copy_constructor)(element);
+	}
 }
 
 void vector_pop_back(vector *this) {
     assert(this);
     // your code here
+//	void* elem3;
+//	if((elem3 = this->array[this->size])){
+//		 (*this->destructor)(elem3);
+//	}
+//	this->array[this->size-1] = NULL;
+//	vector_resize(this, this->size-1);
+	vector_resize(this, (this->size-1));
 }
 
 void vector_insert(vector *this, size_t position, void *element) {
     assert(this);
     // your code here
+	if (position >= this->size) {
+     		 vector_resize(this, position + 1);
+   	    	 if (element != NULL) {
+			this->array[position] = (*this->copy_constructor)(element);
+      		}
+    	}
+    	else {
+      		vector_resize(this, this->size + 1);
+     		 size_t newsize = this->size - 1;
+     		 for (size_t i = newsize; i > position; i--) {
+			this->array[i] = this->array[i - 1];
+     		 }
+    		  if (element != NULL) {
+			this->array[position] = (*this->copy_constructor)(element);
+     		 }
+      		else {
+			this->array[position] = NULL;
+      		}
+    	}
+			
 }
 
 void vector_erase(vector *this, size_t position) {
     assert(this);
     assert(position < vector_size(this));
     // your code here
+	//deallocate if needed
+
+	size_t v_size = this->size;
+    	if (position < v_size) {
+      		vector_resize(this, (v_size - 1));
+      		for (size_t i = position; i < (v_size - 1); i++) {
+			this->array[i] = this->array[i + 1];
+      		}	
+    	}	
 }
 
+//hi
 void vector_clear(vector *this) {
-    // your code here
+    // your code here  nope
+//	this->size = 0;
+ 	for (size_t i = 0; i < this->size; i++) {
+      		void* temp;
+		temp = this->array[i];
+      		if (temp != NULL) {
+          		(*this->destructor)(temp);
+     		 }
+  	}
+	this->size = 0;
 }
 
 // The following is code generated:
