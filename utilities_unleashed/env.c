@@ -11,7 +11,7 @@
 #include <sys/wait.h>
 #include "format.h"
 
-extern char **bing;
+extern char **environ;
 
 int check(char c){
 
@@ -123,7 +123,7 @@ int main(int argc, char *argv[]) {
        		 if (!strcmp(argv[ddidx], "--")) break;
 		
 		if(argc == 1){
-			char** ptr = bing;
+			char** ptr = environ;
 			while(*ptr){
 				printf("%s\n", *ptr);
 				ptr +=1;
