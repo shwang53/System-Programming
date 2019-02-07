@@ -2,7 +2,6 @@
  * Utilities Unleashed Lab
  * CS 241 - Spring 2019
  */
-// partner net id = skim586 
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -12,7 +11,7 @@
 #include <sys/wait.h>
 #include "format.h"
 
-extern char **environ;
+extern char **bing;
 
 int check(char c){
 
@@ -124,7 +123,7 @@ int main(int argc, char *argv[]) {
        		 if (!strcmp(argv[ddidx], "--")) break;
 		
 		if(argc == 1){
-			char** ptr = environ;
+			char** ptr = bing;
 			while(*ptr){
 				printf("%s\n", *ptr);
 				ptr +=1;
