@@ -64,6 +64,14 @@ int shell(int argc, char *argv[]) {
     it = 0;
     temp = 0;
 	
+
+	  char* line = NULL;
+        size_t len = 0;
+        ssize_t nread = 0;
+         vector* histv = string_vector_create();
+
+
+
 	char *full_path = get_full_path(argv[optind]);
 //    vector* histv = string_vector_create();
     
@@ -79,12 +87,12 @@ int shell(int argc, char *argv[]) {
 	    strcpy(h_n, argv[1]);
 	    fd = open(h_n, O_CREAT | O_RDWR | O_TRUNC, 0666);
 	    signal(SIGINT, SIG_IGN);
-		break;
+
 	}
 	if (!strcmp(argv[i], "-f")) {
 	    fexe = true;
 	    strcpy(f_n, argv[1]);
-		break;
+		
 	}
     }
    
@@ -96,9 +104,9 @@ int shell(int argc, char *argv[]) {
 	    return 0;
 	}
 
-	char* line = NULL;
-	size_t len = 0;
-	ssize_t nread = 0;
+//	char* line = NULL;
+//	size_t len = 0;
+//	ssize_t nread = 0;
 //	 vector* histv = string_vector_create();
 
 	    char* dir = NULL;
@@ -168,27 +176,27 @@ int shell(int argc, char *argv[]) {
 	    else {
 		choose = 3;
 	    }
-/*
+
 
 	    if (choose == 0) {
-		if (run(bb[0][histv], 1, 1) == 0) {
-		    run(bb[1][histv], 1, 1);
+		if (execute(bb[0], histv, 1,1) == 0) {
+		    execute(bb[1],histv,1, 1);
 		}
 	    }
 	    else if (choose == 1) {
-		if (run(bb[0][histv], 1, 1) == 0) {
+		if (execute(bb[0],histv, 1,1) == 0) {
 		    continue;
 		}
 		else {
-		    run(bb[1][histv], 1, 1);
+		    execute(bb[1], histv, 1,1);
 		}
 	    }
 	    else if (choose == 2) {
-		run(bb[0][histv], 1, 1);
-                run(bb[1][histv], 1, 1);
+		execute(bb[0], histv, 1,1);
+                execute(bb[1], histv, 1,1);
 	    }
 	    else if (choose == 3) {
-		run(line, 1, 1);
+		execute(line,histv, 1, 1);
 	    }
 
 	    free(line);
@@ -203,7 +211,7 @@ int shell(int argc, char *argv[]) {
 
 
 	    
-	    vector_push_back(hiv, line);
+	    vector_push_back(histv, line);
 	    print_prompt(dir, getpid());
 	    printf("%s\n", line);
 
@@ -219,14 +227,14 @@ int shell(int argc, char *argv[]) {
 	    }
 	    else if (strncmp(line, "!", 1)) {
 		if (strcmp(line, "!history")) {
-		    for (size_t i = 0; i < vector_size(hiv); i++) {
-			print_history_line(i, vector_get(hiv, i));
+		    for (size_t i = 0; i < vector_size(histv); i++) {
+			print_history_line(i, vector_get(histv, i));
 		    }
 		}
 		else {
 		    char* temp = NULL;
 		    char* cmd = line + 1;
-		    VECTOR_FOR_EACH(hiv, thing, {
+		    VECTOR_FOR_EACH(histv, thing, {
 			    if (strncmp(cmd, thing, 1) == 0) {
 				temp = thing;
 			    }
@@ -235,7 +243,7 @@ int shell(int argc, char *argv[]) {
 		}
 	    }
 	    else {
-		vector_push_back(hiv, line);
+		vector_push_back(histv, line);
 		pid_t mc = fork();
 		int stat;
 		if (mc > 0) {
@@ -271,18 +279,18 @@ int shell(int argc, char *argv[]) {
 	    }
 	    
     }
-    free(dir);
+    free(div);
     free(line);
-    dir = NULL;
+//    div = NULL;
     line = NULL;
-    vector_destroy(hiv);
-    fclose(fd);
+    vector_destroy(histv);
+   // fclose(fn);
     exit(0);    
 
-	execute_f(f_n, his, histv);
-    }
+//	execute_f(full_path, his, histv);
     
-    else if (his) {
+    
+     if(his) {
 	char* buffer = NULL;
 	size_t len = 0;
 	ssize_t nread = 0;
@@ -291,7 +299,7 @@ int shell(int argc, char *argv[]) {
 		buffer[nread - 1] = '\0';
 	    }
 	    if (len > 0) {
-		execute_f(buffer, his, histv);
+//		execute_f(buffer, his, histv);
 	    }
 	}
 	free(buffer);
@@ -305,10 +313,9 @@ int shell(int argc, char *argv[]) {
 	}
     }
     
-*/
 
-}
-} 
+
+
     return 0;
 }
 
