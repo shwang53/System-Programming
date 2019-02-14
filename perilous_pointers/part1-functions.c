@@ -21,6 +21,9 @@
  * @param grade
  *     The grade to check.
  */
+
+
+
 void one(const char *grade) {
 	float grade_ = atof(grade);
 
@@ -256,3 +259,4 @@ int little_automaton(int (*transition)(int, char), const char *input_string) {
   	}	
    	 return state;
 }
+///

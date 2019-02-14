@@ -87,23 +87,23 @@ int shell(int argc, char *argv[]) {
 	    strcpy(h_n, argv[1]);
 	    fd = open(h_n, O_CREAT | O_RDWR | O_TRUNC, 0666);
 	    signal(SIGINT, SIG_IGN);
-
+		break;
 	}
 	if (!strcmp(argv[i], "-f")) {
 	    fexe = true;
 	    strcpy(f_n, argv[1]);
-		
+		break;
 	}
     }
-   
+   FILE* fd = fopen(full_path, "r"); 
 	//load history 
     if (fexe) {
-	FILE* fd = fopen(full_path, "r");
+//	FILE* fd = fopen(full_path, "r");
 	if (!fd) {
 	    print_script_file_error();
 	    return 0;
 	}
-
+    }
 //	char* line = NULL;
 //	size_t len = 0;
 //	ssize_t nread = 0;
@@ -279,12 +279,12 @@ int shell(int argc, char *argv[]) {
 	    }
 	    
     }
-    free(div);
+    free(dir);
     free(line);
-//    div = NULL;
+   dir = NULL;
     line = NULL;
     vector_destroy(histv);
-   // fclose(fn);
+    fclose(full_path);
     exit(0);    
 
 //	execute_f(full_path, his, histv);
