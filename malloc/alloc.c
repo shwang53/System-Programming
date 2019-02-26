@@ -47,7 +47,6 @@ static dll* tail = NULL;
  */
 void *calloc(size_t num, size_t size) {
     // implement calloc!
-	    // implement calloc!
     size_t sumsize = (num * size);
     void* out = malloc(sumsize);
 
@@ -85,8 +84,8 @@ void *calloc(size_t num, size_t size) {
  * @see http://www.cplusplus.com/reference/clibrary/cstdlib/malloc/
  */
 void *malloc(size_t size) {
-    // implement malloc!
-	// implement malloc!
+	
+// implement malloc!
     dll* metadata = NULL;
     //start of memory block
     if (head == NULL) {
@@ -181,7 +180,7 @@ void *malloc(size_t size) {
  *    passed as argument, no action occurs.
  */
 //helper function to join to mem blocks
-void join(dll* t1, dll* t2) {
+void helper(dll* t1, dll* t2) {
     t1->next = t2->next;
     t1->max = t1->max + t2->max + sizeof(dll);
 
@@ -200,27 +199,24 @@ void free(void *ptr) {
 
     if (metadata == head) {
 	if (metadata->next != NULL && metadata->next->lsize == 0) {
-	    join(metadata, metadata->next);
+	    helper(metadata, metadata->next);
 	}
     }
     else if (metadata == tail) {
 	if (metadata->prev->lsize == 0) {
-	    join(metadata->prev, metadata);
+	    helper(metadata->prev, metadata);
 	}
     }
     else {
 	if (metadata->next->lsize == 0) {
-	    join(metadata, metadata->next);
+	    helper(metadata, metadata->next);
 	}
 	if (metadata->prev->lsize == 0) {
-	    join(metadata->prev, metadata);
+	    helper(metadata->prev, metadata);
 	}
     }
 }
 
-//void free(void *ptr) {
-    // implement free!
-//}
 
 /**
  * Reallocate memory block
