@@ -1,3 +1,5 @@
+
+
 /**
  * Malloc Lab
  * CS 241 - Spring 2019
@@ -7,6 +9,18 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+//double linked list
+typedef struct dll {
+    struct dll* next;
+    struct dll* prev;
+    size_t max;
+    size_t lsize;
+} dll;
+
+static dll* head = NULL;
+static dll* tail = NULL;
+
 
 /**
  * Allocate space for array in memory
@@ -33,7 +47,20 @@
  */
 void *calloc(size_t num, size_t size) {
     // implement calloc!
-    return NULL;
+	    // implement calloc!
+    size_t sumsize = (num * size);
+    void* out = malloc(sumsize);
+
+    if (out) {
+	memset(out, 0, sumsize);
+    }
+    else {
+	return NULL;
+    }
+    
+    return out;
+
+//    return NULL;
 }
 
 /**
@@ -59,7 +86,82 @@ void *calloc(size_t num, size_t size) {
  */
 void *malloc(size_t size) {
     // implement malloc!
-    return NULL;
+	// implement malloc!
+    dll* metadata = NULL;
+    //start of memory block
+    if (head == NULL) {
+	metadata = sbrk(sizeof(dll)+size);
+	metadata->next = NULL;
+	metadata->prev = NULL;
+	metadata->max = size;
+	metadata->lsize = size;
+
+	head = metadata;
+	tail = metadata;
+    }
+    //allocate after tail
+    else if (size <= 64) {
+	metadata = sbrk(sizeof(dll)+size);
+	metadata->prev = tail;
+	metadata->max = size;
+	metadata->lsize = size;
+
+	tail->next = metadata;
+	tail = tail->next;
+	tail->next = NULL;
+    }
+    else {
+	dll* temp = tail;
+	//find correct mem block location
+        for(; temp!= NULL; temp = temp->prev) {
+	    size_t sizelim = size + temp->lsize + sizeof(dll);
+	    if ((temp->max >= sizelim) || (temp->max >= size && temp->lsize == 0)) {
+		break;
+	    }
+	}
+	if (temp != NULL) {
+	    //free block is found and is larger than space needed, so create allocated & remain entries
+	    if (temp->lsize != 0) {
+		//createtwo
+		dll* otherb = (dll*) ((void*)temp + sizeof(dll) + temp->lsize);
+		otherb->lsize = size;
+		otherb->max = temp->max - temp->lsize - sizeof(dll);
+
+		temp->max = temp->lsize;
+
+		otherb->next = temp->next;
+		otherb->prev = temp;
+
+		temp->next = otherb;
+
+		if (otherb->next == NULL) {
+		    tail = otherb;
+		}
+		else {
+		    otherb->next->prev = otherb;
+		}
+		
+		metadata = temp->next;
+	    }
+	    else {
+		metadata = temp;
+		temp->lsize = size;
+	    }
+	}
+	else {
+	    metadata = sbrk(sizeof(dll)+size);
+	    metadata->prev = tail;
+	    metadata->max = size;
+	    metadata->lsize = size;
+
+	    tail->next = metadata;
+	    tail = tail->next;
+	    tail->next = NULL;
+	}
+    }
+    void* out = (void*) (metadata + 1);
+    return out;  
+ // return NULL;
 }
 
 /**
@@ -78,9 +180,47 @@ void *malloc(size_t size) {
  *    calloc() or realloc() to be deallocated.  If a null pointer is
  *    passed as argument, no action occurs.
  */
+//helper function to join to mem blocks
+void join(dll* t1, dll* t2) {
+    t1->next = t2->next;
+    t1->max = t1->max + t2->max + sizeof(dll);
+
+    if (t1->next == NULL) {
+	tail = t1;
+    }
+    else {
+	t1->next->prev = t1;
+    }
+}
+
 void free(void *ptr) {
     // implement free!
+    dll* metadata = (dll*)ptr - 1;
+    metadata->lsize = 0;
+
+    if (metadata == head) {
+	if (metadata->next != NULL && metadata->next->lsize == 0) {
+	    join(metadata, metadata->next);
+	}
+    }
+    else if (metadata == tail) {
+	if (metadata->prev->lsize == 0) {
+	    join(metadata->prev, metadata);
+	}
+    }
+    else {
+	if (metadata->next->lsize == 0) {
+	    join(metadata, metadata->next);
+	}
+	if (metadata->prev->lsize == 0) {
+	    join(metadata->prev, metadata);
+	}
+    }
 }
+
+//void free(void *ptr) {
+    // implement free!
+//}
 
 /**
  * Reallocate memory block
@@ -129,5 +269,35 @@ void free(void *ptr) {
  */
 void *realloc(void *ptr, size_t size) {
     // implement realloc!
-    return NULL;
+	if (ptr == NULL) {
+	void* out = malloc(size);
+	return out;
+    }
+
+    if (size == 0 && ptr != NULL) {
+	free(ptr);
+	return NULL;
+    }
+
+    dll* metadata = (dll*)ptr - 1;
+
+    if (metadata->lsize >= size) {
+	metadata->lsize = size;
+	return ptr;
+    }
+    else {
+	void* out = malloc(size);
+	if (out == NULL) {
+	    return NULL;
+	}
+	else {
+	    memcpy(out, ptr, metadata->lsize);
+	    free(ptr);
+	    return out;
+	}
+    } 
+
+ //  return NULL;
 }
+
+
