@@ -12,12 +12,14 @@ struct drm_t {};
 
 drm_t *drm_init() {
     /* Your code here */
+	//hi
     return NULL;
 }
 
 int drm_post(drm_t *drm, pthread_t *thread_id) {
     /* Your code here */
-    return 0;
+   	//nice
+	 return 0;
 }
 
 int drm_wait(drm_t *drm, pthread_t *thread_id) {
