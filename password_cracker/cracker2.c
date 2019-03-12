@@ -1,6 +1,3 @@
-/*chine Problem: Password Cracker
- * CS 241 - Fall 2017
- */
 
 #include "cracker2.h"
 #include "format.h"
