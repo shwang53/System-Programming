@@ -1,8 +1,3 @@
-/**
- * Ideal Indirection Lab
- * CS 241 - Spring 2019
- */
- 
 #include "mmu.h"
 #include <assert.h>
 #include <dirent.h>
@@ -15,21 +10,72 @@ mmu *mmu_create() {
     my_mmu->tlb = tlb_create();
     return my_mmu;
 }
-
 void mmu_read_from_virtual_address(mmu *this, addr32 virtual_address,
-                                   size_t pid, void *buffer, size_t num_bytes) {
-    assert(this);
-    assert(pid < MAX_PROCESS_ID);
-    assert(num_bytes + (virtual_address % PAGE_SIZE) <= PAGE_SIZE);
-    // TODO implement me
-}
+                                   size_t pid, void *buffer, size_t num_bytes);
+
+
 
 void mmu_write_to_virtual_address(mmu *this, addr32 virtual_address, size_t pid,
                                   const void *buffer, size_t num_bytes) {
     assert(this);
     assert(pid < MAX_PROCESS_ID);
     assert(num_bytes + (virtual_address % PAGE_SIZE) <= PAGE_SIZE);
-    // TODO implement me
+    if (!address_in_segmentations(this->segmentations[pid], virtual_address)) {
+        mmu_raise_segmentation_fault(this);
+        return;
+    }
+
+
+    if (this->curr_pid != pid) {
+        tlb_flush(&this->tlb);
+        this->curr_pid = pid;
+    }
+    size_t base_address = virtual_address >> 12;
+    size_t dir_offset = virtual_address >> 22;
+    size_t table_offset = base_address & 0x3ff;
+    size_t physical_offset = virtual_address & 0xfff;
+
+    
+    page_table_entry *pte_base = tlb_get_pte(&this->tlb, base_address);
+    if (!pte_base) {
+      
+        mmu_tlb_miss(this);
+        page_directory_entry * dir_entry = &(this->page_directories[pid])->entries[dir_offset];
+        if (!dir_entry->present) {
+          
+            mmu_raise_page_fault(this);
+            addr32 ask_addr = ask_kernel_for_frame((page_table_entry *)&dir_entry);
+            dir_entry->base_addr = ask_addr >> 12;
+            dir_entry->present = 1;
+            read_page_from_disk((page_table_entry *)&dir_entry);
+        }
+
+        page_table * pt = (page_table *)(((uintptr_t)(dir_entry->base_addr)) << 12);
+        pte_base = &pt->entries[table_offset];
+        tlb_add_pte(&this->tlb, base_address, pte_base);
+    }
+
+    if (!pte_base->present) {
+        mmu_raise_page_fault(this);
+        addr32 ask_addr2 = ask_kernel_for_frame(pte_base);
+        pte_base->base_addr = ask_addr2 >> 12;
+        pte_base->present = 1;
+        pte_base->user_supervisor = 1;
+        read_page_from_disk(pte_base);
+        pte_base->read_write = 1;
+    }
+
+
+    addr32 phy_addr_base = pte_base->base_addr;
+    if (!address_in_segmentations(this->segmentations[pid], virtual_address) || !pte_base->read_write) {
+        mmu_raise_segmentation_fault(this);
+        return;
+    }
+    pte_base->dirty = 1;
+    pte_base->accessed = 1;
+    addr32 physical = (phy_addr_base << 12) + physical_offset;
+    void * phy = get_system_pointer_from_address(physical);
+    memcpy(phy, buffer, num_bytes);
 }
 
 void mmu_tlb_miss(mmu *this) {
@@ -162,3 +208,64 @@ void mmu_delete(mmu *this) {
     free(this);
     remove_swap_files();
 }
+void mmu_read_from_virtual_address(mmu *this, addr32 virtual_address,
+                                   size_t pid, void *buffer, size_t num_bytes) {
+    assert(this);
+    assert(pid < MAX_PROCESS_ID);
+    assert(num_bytes + (virtual_address % PAGE_SIZE) <= PAGE_SIZE);
+    if (!address_in_segmentations(this->segmentations[pid], virtual_address)) {
+        mmu_raise_segmentation_fault(this);
+        return;
+    }
+    
+    if (this->curr_pid != pid) {
+        tlb_flush(&this->tlb);
+        this->curr_pid = pid;
+    }
+    
+    size_t base_address = virtual_address >> 12;
+    size_t dir_offset = virtual_address >> 22;
+    size_t table_offset = base_address & 0x3ff;
+    size_t physical_offset = virtual_address & 0xfff;
+    
+    
+    page_table_entry * pte_base = tlb_get_pte(&this->tlb, base_address);
+    if(!pte_base){
+        
+        mmu_tlb_miss(this);
+        page_directory_entry * dir_entry = &(this->page_directories[pid])->entries[dir_offset];
+        if (!dir_entry->present) {
+            
+            mmu_raise_page_fault(this);
+            addr32 ask_addr = ask_kernel_for_frame((page_table_entry*)dir_entry);
+            dir_entry->base_addr = ask_addr >> 12;
+            dir_entry->present = 1;
+            read_page_from_disk((page_table_entry*)dir_entry);
+        }
+        
+        page_table * pt = (page_table *)(((uintptr_t)(dir_entry->base_addr)) << 12);
+        pte_base = &pt->entries[table_offset];
+        tlb_add_pte(&this->tlb, base_address, pte_base);
+    }
+    
+    if (!pte_base->present) {
+        mmu_raise_page_fault(this);
+        addr32 ask_addr2 = ask_kernel_for_frame(pte_base);
+        pte_base->base_addr = ask_addr2 >> 12;
+        pte_base->present = 1;
+        pte_base->user_supervisor = 1;
+        read_page_from_disk(pte_base);
+    }
+    
+    
+    addr32 phy_addr_base = pte_base->base_addr;
+    if (!address_in_segmentations(this->segmentations[pid], virtual_address)) {
+        mmu_raise_segmentation_fault(this);
+        return;
+    }
+    pte_base->accessed = 1;
+    addr32 physical = (phy_addr_base << 12) + physical_offset;
+    void * phy = get_system_pointer_from_address(physical);
+    memcpy(buffer, phy, num_bytes);
+}
+
