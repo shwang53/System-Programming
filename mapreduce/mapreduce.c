@@ -5,7 +5,6 @@
 
 
 #include "utils.h"
-
 #include <alloca.h>
 #include <assert.h>
 #include <errno.h>
@@ -24,12 +23,17 @@ int main(int argc, char ** argv) {
         exit(1);
 	}
 	int num = atoi(argv[5]);
+
     // Create an input pipe for each mapper.
  	int mapper_pipe[2];
 	pipe(mapper_pipe);
+
+
     // Open the output file.
 	int input_start = open(argv[1], O_RDONLY);
     int output_end = open(argv[2], O_CREAT | O_TRUNC | O_WRONLY, S_IRWXU);
+
+
     // Start a splitter process for each mapper.
 	pid_t splitter_id[num];
 	pid_t mapper_id[num];
@@ -50,6 +54,8 @@ int main(int argc, char ** argv) {
 			execlp("./splitter", "./splitter", argv[1], argv[5], splitter_idx, (char *)NULL);
 			exit(1);
 		}
+
+
 		//Start the mapper processe.
 		mapper_id[i] = fork();
 		if (mapper_id[i] == 0) {
@@ -66,9 +72,12 @@ int main(int argc, char ** argv) {
     	close(splitter_pipe[0]);
     	close(splitter_pipe[1]);
 	}
+
+
     // Start the reducer process.
     // take one reducer to complete the task
 	pid_t reducer_id = fork();
+
     // Wait for the reducer to finish.
 	if (reducer_id == 0) {
     	close(mapper_pipe[1]);
@@ -97,6 +106,7 @@ int main(int argc, char ** argv) {
     	}
 		int r_s;
     	waitpid(reducer_id, &r_s, 0);
+
     	if (WIFEXITED(r_s) && WEXITSTATUS(r_s)) {
     		print_nonzero_exit_status(argv[4], WEXITSTATUS(r_s));
 		}
@@ -105,6 +115,7 @@ int main(int argc, char ** argv) {
 	print_num_lines(argv[2]);
 	close(input_start);
 	close(output_end);
+
     // Count the number of lines in the output file.
     return 0;
 }
