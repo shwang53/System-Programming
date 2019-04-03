@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
+#include <unistd.h>
 
 #include "utils.h"
 static const size_t MESSAGE_SIZE_DIGITS = 4;
@@ -32,15 +34,40 @@ ssize_t get_message_size(int socket) {
 // You may assume size won't be larger than a 4 byte integer
 ssize_t write_message_size(size_t size, int socket) {
     // Your code here
+	    ssize_t mes_size = htonl(size);
+    ssize_t wats_ret = write_all_to_socket(socket, (char *)&mes_size, MESSAGE_SIZE_DIGITS);
+    if (wats_ret == 0 || wats_ret == -1) {
+        return wats_ret;
+    }
+    return mes_size;
+
     return 9001;
 }
 
 ssize_t read_all_from_socket(int socket, char *buffer, size_t count) {
     // Your Code Here
+	ssize_t read_bytes = count;
+    while (read_bytes) {
+        ssize_t r = read(socket, buffer + count - read_bytes, read_bytes);
+        if (r == -1 && errno == EINTR) { continue; }
+        read_bytes -= r;
+    }
+    return count;
     return 9001;
 }
 
 ssize_t write_all_to_socket(int socket, const char *buffer, size_t count) {
     // Your Code Here
-    return 9001;
+   	 ssize_t write_bytes = count;
+    while (write_bytes) {
+        ssize_t w = write(socket, buffer + count - write_bytes, write_bytes);
+        if (w <= 0) {
+            if (w == -1 && errno == EINTR) { continue; }
+            perror(strerror(w));
+            return w;
+        }
+        write_bytes -= w;
+    }
+    return count;
+	 return 9001;
 }

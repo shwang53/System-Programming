@@ -20,17 +20,25 @@
 static volatile int serverSocket;
 static pthread_t threads[2];
 
+
 void *write_to_server(void *arg);
 void *read_from_server(void *arg);
 void close_program(int signal);
 
+static struct addrinfo * result;
 /**
  * Shuts down connection with 'serverSocket'.
  * Called by close_program upon SIGINT.
  */
 void close_server_connection() {
     // Your code here
+
+	freeaddrinfo(result);
+	 close(serverSocket);
+	
+
 }
+
 
 /**
  * Sets up a connection to a chatroom server and returns
@@ -52,7 +60,26 @@ int connect_to_server(const char *host, const char *port) {
     /*QUESTION 6*/
 
     /*QUESTION 7*/
-    return -1;
+   
+    int temp = socket(AF_INET, SOCK_STREAM, 0);
+
+    struct addrinfo hints;
+    memset(&hints, 0, sizeof (struct addrinfo));
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+
+    int s = getaddrinfo(host, port, &hints, &result);
+    if (s != 0) {
+        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(s));
+        exit(-1);
+    }
+
+    if (connect(temp, result->ai_addr, result->ai_addrlen) == -1) {
+        perror(NULL);
+        exit(-1);
+    }
+    return temp;
+    
 }
 
 typedef struct _thread_cancel_args {

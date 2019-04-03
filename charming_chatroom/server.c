@@ -35,6 +35,7 @@ static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 void close_server() {
     endSession = 1;
     // add any additional flags here you want.
+	fprintf(stdout, "Ending Server");
 }
 
 /**
@@ -88,7 +89,71 @@ void run_server(char *port) {
     /*QUESTION 9*/
 
     /*QUESTION 10*/
+
+	 for (int i = 0; i < 8; i++) {
+		clients[i] = -1;
+	}
+
+    int sock_fd = socket(AF_INET, SOCK_STREAM, 0);
+    int s;
+
+    s = setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int));
+    if (s != 0) {
+        perror(NULL);
+        exit(1);
+    }
+
+    struct addrinfo hints, *result;
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
+    s = getaddrinfo(NULL, port, &hints, &result);
+    if (s != 0) {
+        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(s));
+        exit(1);
+    }
+
+    if (bind(sock_fd, result->ai_addr, result->ai_addrlen) != 0) {
+        perror(NULL);
+        exit(1);
+    }
+
+    if (listen(sock_fd, 10) != 0) {
+        perror(NULL);
+        exit(1);
+    }
+
+    serverSocket = sock_fd;
+    pthread_t threads[MAX_CLIENTS];
+    fprintf(stdout, "Waiting for client connection...\n");
+    while (endSession == 0) {
+        int client_fd = accept(sock_fd, NULL, NULL);
+        if (client_fd == -1) {
+            break;
+        }
+        printf("Connection made: client_fd=%d\n", client_fd);
+        size_t temp = 0;
+        pthread_mutex_lock(&mutex);
+        for (temp = 0; temp < MAX_CLIENTS; temp++) {
+            if (clients[temp] == -1) { break; }
+        }
+        if (temp == MAX_CLIENTS) {
+            if (shutdown(client_fd, SHUT_RDWR) != 0) {
+                perror(NULL);
+            }
+            close(client_fd);
+            continue;
+        }
+        clients[temp] = client_fd;
+        clientsCount++;
+        pthread_mutex_unlock(&mutex);
+        pthread_create(&threads[temp], NULL, process_client, (void *)temp);
+    }
+    freeaddrinfo(result);
+
 }
+
 
 /**
  * Broadcasts the message to all connected clients.
